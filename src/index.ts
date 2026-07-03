@@ -1,8 +1,16 @@
-import "dotenv/config";
 import app from "./app";
+import { config } from "./config";
+import { connectToDatabase } from "./config/db";
 
-const port = process.env.PORT ?? 3000;
+async function main(): Promise<void> {
+  await connectToDatabase();
 
-app.listen(port, () => {
-  console.log(`Wallet API listening on port ${port}`);
+  app.listen(config.port, () => {
+    console.log(`Wallet API listening on port ${config.port}`);
+  });
+}
+
+main().catch((error) => {
+  console.error("Failed to start server:", error);
+  process.exit(1);
 });

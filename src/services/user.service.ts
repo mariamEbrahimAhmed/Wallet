@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { userRepository } from "../repositories/user.repository";
+import type { UserRepository } from "../repositories/user.repository.interface";
 import { User } from "../models";
 
 const SALT_ROUNDS = 12;
@@ -10,21 +10,27 @@ export interface RegisterUserInput {
   password: string;
 }
 
-export const userService = {
-  async registerUser(input: RegisterUserInput): Promise<User> {
-    const hashedPassword = await bcrypt.hash(input.password, SALT_ROUNDS);
-    return userRepository.create({
-      username: input.username,
-      phoneNumber: input.phoneNumber,
-      hashedPassword,
-    });
-  },
+export function createUserService(deps: { userRepository: UserRepository }) {
+  const { userRepository } = deps;
 
-  async getUserById(id: string): Promise<User | null> {
-    return userRepository.findById(id);
-  },
+  return {
+    async registerUser(input: RegisterUserInput): Promise<User> {
+      const hashedPassword = await bcrypt.hash(input.password, SALT_ROUNDS);
+      return userRepository.create({
+        username: input.username,
+        phoneNumber: input.phoneNumber,
+        hashedPassword,
+      });
+    },
 
-  async deleteUser(id: string): Promise<void> {
-    await userRepository.softDelete(id);
-  },
-};
+    async getUserById(id: string): Promise<User | null> {
+      return userRepository.findById(id);
+    },
+
+    async deleteUser(id: string): Promise<void> {
+      await userRepository.softDelete(id);
+    },
+  };
+}
+
+export type UserService = ReturnType<typeof createUserService>;

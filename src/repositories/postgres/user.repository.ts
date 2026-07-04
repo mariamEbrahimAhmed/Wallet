@@ -2,28 +2,7 @@ import { Pool } from "pg";
 import { User } from "../../models";
 import { CreateUserDto } from "../../types";
 import { UserRepository } from "../user.repository.interface";
-
-interface UserRow {
-  id: string;
-  username: string;
-  phone_number: string;
-  hashed_password: string;
-  created_at: Date;
-  deleted_at: Date | null;
-  totp_secret: string | null;
-}
-
-function toUser(row: UserRow): User {
-  return {
-    id: row.id,
-    username: row.username,
-    phoneNumber: row.phone_number,
-    hashedPassword: row.hashed_password,
-    createdAt: row.created_at,
-    deletedAt: row.deleted_at,
-    totpSecret: row.totp_secret,
-  };
-}
+import { UserRow, toUser } from "./mappers/user.mapper";
 
 export function createUserRepository(pool: Pool): UserRepository {
   return {

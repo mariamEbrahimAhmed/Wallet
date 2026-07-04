@@ -1,21 +1,16 @@
-import "dotenv/config";
-import { createServer, IncomingMessage, ServerResponse } from "node:http";
+import app from "./app";
+import { config } from "./config";
+import { connectToDatabase } from "./config/db";
 
-const port = process.env.PORT ?? 3000;
+async function main(): Promise<void> {
+  await connectToDatabase();
 
-function handleRequest(req: IncomingMessage, res: ServerResponse): void {
-  if (req.method === "GET" && req.url === "/health") {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ status: "ok" }));
-    return;
-  }
-
-  res.writeHead(404, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({ error: "Not found" }));
+  app.listen(config.port, () => {
+    console.log(`Wallet API listening on port ${config.port}`);
+  });
 }
 
-const server = createServer(handleRequest);
-
-server.listen(port, () => {
-  console.log(`Wallet API listening on port ${port}`);
+main().catch((error) => {
+  console.error("Failed to start server:", error);
+  process.exit(1);
 });

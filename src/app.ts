@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import type { AppContainer } from "./container";
+import { errorHandler } from "./middlewares";
 
 export function createApp(container: Pick<AppContainer, "userRoutes">) {
   const app = express();
@@ -11,6 +12,8 @@ export function createApp(container: Pick<AppContainer, "userRoutes">) {
   });
 
   app.use("/users", container.userRoutes);
+
+  app.use(errorHandler);
 
   return app;
 }

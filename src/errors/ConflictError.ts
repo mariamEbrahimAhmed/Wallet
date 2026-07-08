@@ -1,7 +1,8 @@
 import { AppError } from "./AppError";
+import { HttpStatusCode } from "../constants/http-status-codes";
 
 export class ConflictError extends AppError {
   constructor(message = "Resource already exists") {
-    super(message, 409);
+    super(message, HttpStatusCode.CONFLICT);
   }
 }

@@ -1,6 +1,7 @@
 import { createApp } from "./app";
 import { config } from "./config";
 import { connectToDatabase } from "./config/db";
+import { logger } from "./config/logger";
 import { buildContainer } from "./container";
 
 async function main(): Promise<void> {
@@ -10,11 +11,11 @@ async function main(): Promise<void> {
   const app = createApp(container);
 
   app.listen(config.port, () => {
-    console.log(`Wallet API listening on port ${config.port}`);
+    logger.info(`Wallet API listening on port ${config.port}`);
   });
 }
 
 main().catch((error) => {
-  console.error("Failed to start server:", error);
+  logger.error({ err: error }, "Failed to start server");
   process.exit(1);
 });

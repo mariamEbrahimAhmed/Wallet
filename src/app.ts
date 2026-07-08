@@ -1,3 +1,4 @@
+import cors from "cors";
 import express, { Request, Response } from "express";
 import type { AppContainer } from "./container";
 import { errorHandler } from "./middlewares";
@@ -5,6 +6,13 @@ import { errorHandler } from "./middlewares";
 export function createApp(container: Pick<AppContainer, "userRoutes">) {
   const app = express();
 
+  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || ["http://localhost:3000"];
+
+  app.use(
+    cors({
+      origin: allowedOrigins,
+    })
+  );
   app.use(express.json());
 
   app.get("/health", (_req: Request, res: Response) => {

@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import type { Logger } from "pino";
 import type { UserRepository } from "../repositories/user.repository.interface";
 import { User } from "../models";
 
@@ -10,17 +11,23 @@ export interface RegisterUserInput {
   password: string;
 }
 
-export function createUserService(deps: { userRepository: UserRepository }) {
-  const { userRepository } = deps;
+export function createUserService(deps: { userRepository: UserRepository; logger: Logger }) {
+  const { userRepository, logger } = deps;
 
   return {
     async registerUser(input: RegisterUserInput): Promise<User> {
-      const hashedPassword = await bcrypt.hash(input.password, SALT_ROUNDS);
-      return userRepository.create({
-        username: input.username,
-        phoneNumber: input.phoneNumber,
-        hashedPassword,
-      });
+      try {
+        const hashedPassword = await bcrypt.hash(input.password, SALT_ROUNDS);
+        const user = await userRepository.create({
+          username: input.username,
+          phoneNumber: input.phoneNumber,
+          hashedPassword,
+        });
+        logger.info({ userId: user.id }, "User registered");
+        return user;
+      } catch (err) {
+        throw new Error(`Failed to register user "${input.username}"`, { cause: err });
+      }
     },
 
     async getUserById(id: string): Promise<User | null> {
@@ -28,7 +35,12 @@ export function createUserService(deps: { userRepository: UserRepository }) {
     },
 
     async deleteUser(id: string): Promise<void> {
-      await userRepository.softDelete(id);
+      try {
+        await userRepository.softDelete(id);
+        logger.info({ userId: id }, "User deleted");
+      } catch (err) {
+        throw new Error(`Failed to delete user "${id}"`, { cause: err });
+      }
     },
   };
 }

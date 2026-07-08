@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import type { UserService } from "../services/user.service";
+import { sendSuccess } from "../utils";
+import { NotFoundError } from "../errors";
 
 export function createUserController(deps: { userService: UserService }) {
   const { userService } = deps;
@@ -7,16 +9,15 @@ export function createUserController(deps: { userService: UserService }) {
   return {
     async registerUser(req: Request, res: Response): Promise<void> {
       const user = await userService.registerUser(req.body);
-      res.status(201).json(user);
+      sendSuccess(res, user, 201);
     },
 
     async getUserById(req: Request, res: Response): Promise<void> {
       const user = await userService.getUserById(req.params.id as string);
       if (!user) {
-        res.status(404).json({ message: "User not found" });
-        return;
+        throw new NotFoundError("User not found");
       }
-      res.json(user);
+      sendSuccess(res, user);
     },
 
     async deleteUser(req: Request, res: Response): Promise<void> {

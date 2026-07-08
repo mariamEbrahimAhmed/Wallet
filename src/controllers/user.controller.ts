@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import type { UserService } from "../services/user.service";
-import { sendSuccess } from "../utils";
+import { sendSuccess, toPublicUser } from "../utils";
 import { NotFoundError } from "../errors";
+import { HttpStatusCode } from "../constants/http-status-codes";
 
 export function createUserController(deps: { userService: UserService }) {
   const { userService } = deps;
@@ -9,7 +10,7 @@ export function createUserController(deps: { userService: UserService }) {
   return {
     async registerUser(req: Request, res: Response): Promise<void> {
       const user = await userService.registerUser(req.body);
-      sendSuccess(res, user, 201);
+      sendSuccess(res, toPublicUser(user), HttpStatusCode.CREATED);
     },
 
     async getUserById(req: Request, res: Response): Promise<void> {
@@ -17,12 +18,12 @@ export function createUserController(deps: { userService: UserService }) {
       if (!user) {
         throw new NotFoundError("User not found");
       }
-      sendSuccess(res, user);
+      sendSuccess(res, toPublicUser(user));
     },
 
     async deleteUser(req: Request, res: Response): Promise<void> {
       await userService.deleteUser(req.params.id as string);
-      res.status(204).send();
+      res.status(HttpStatusCode.NO_CONTENT).send();
     },
   };
 }

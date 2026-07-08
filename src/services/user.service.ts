@@ -31,6 +31,10 @@ export function createUserService(deps: { userRepository: UserRepository; logger
       return userRepository.findById(id);
     },
 
+    async getUserByPhoneNumber(phoneNumber: string): Promise<User | null> {
+      return userRepository.findActiveByPhoneNumber(phoneNumber);
+    },
+
     async deleteUser(id: string): Promise<void> {
       try {
         await userRepository.softDelete(id);

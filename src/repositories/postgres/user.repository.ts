@@ -24,7 +24,7 @@ export function createUserRepository(pool: Pool): UserRepository {
       return rows[0] ? toUser(rows[0]) : null;
     },
 
-    async findByPhoneNumber(phoneNumber: string): Promise<User | null> {
+    async findActiveByPhoneNumber(phoneNumber: string): Promise<User | null> {
       const { rows } = await pool.query<UserRow>(
         `SELECT * FROM users WHERE phone_number = $1 AND deleted_at IS NULL`,
         [phoneNumber],
@@ -32,6 +32,7 @@ export function createUserRepository(pool: Pool): UserRepository {
       return rows[0] ? toUser(rows[0]) : null;
     },
 
+    // includes soft-deleted
     async softDelete(id: string): Promise<void> {
       await pool.query(
         `UPDATE users SET deleted_at = now() WHERE id = $1 AND deleted_at IS NULL`,

@@ -17,6 +17,18 @@ export function createAuthController(deps: { authService: AuthService }) {
       const user = await authService.login(req.body);
       sendSuccess(res, toPublicUser(user));
     },
+
+    async logout(req: Request, res: Response): Promise<void> {
+      const refreshToken = req.cookies?.refreshToken;
+      await authService.logout(refreshToken);
+      res.clearCookie("refreshToken");
+    },
+
+    async refreshToken(req: Request, res: Response): Promise<void> {
+      const refreshToken = req.cookies?.refreshToken;
+      const accessToken = await authService.refreshToken(refreshToken);
+      sendSuccess(res, { accessToken });
+    },
   };
 }
 

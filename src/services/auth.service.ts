@@ -1,11 +1,12 @@
 import type { UserService } from "./user.service";
+import type { RefreshTokenRepository } from "../repositories/refresh-token.repository.interface";
 import type { RegisterDto, LoginDto } from "../dtos/auth.dto";
 import type { User } from "../models";
 import { AuthenticationError } from "../errors";
-import { comparePassword } from "../utils";
+import { comparePassword, hashToken, generateAccessToken } from "../utils";
 
-export function createAuthService(deps: { userService: UserService }) {
-  const { userService } = deps;
+export function createAuthService(deps: { userService: UserService; refreshTokenRepository: RefreshTokenRepository }) {
+  const { userService, refreshTokenRepository } = deps;
 
   return {
     async register(input: RegisterDto): Promise<User> {
@@ -24,6 +25,27 @@ export function createAuthService(deps: { userService: UserService }) {
       }
 
       return user;
+    },
+
+    async logout(refreshToken: string | undefined): Promise<void> {
+      if (!refreshToken) {
+        return;
+      }
+      await refreshTokenRepository.revokeByHashedToken(hashToken(refreshToken));
+    },
+
+    async refreshToken(refreshToken: string): Promise<string> {
+      const storedToken = await refreshTokenRepository.findByHashedToken(hashToken(refreshToken));
+      if (!storedToken || storedToken.revokedAt || storedToken.expiresAt < new Date()) {
+        throw new AuthenticationError("Invalid refresh token");
+      }
+
+      const user = await userService.getUserById(storedToken.userId);
+      if (!user) {
+        throw new AuthenticationError("Invalid refresh token");
+      }
+
+      return generateAccessToken(user);
     },
   };
 }

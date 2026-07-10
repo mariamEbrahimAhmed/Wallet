@@ -1,4 +1,5 @@
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import express, { Request, Response } from "express";
 import type { AppContainer } from "./container";
 import { errorHandler } from "./middlewares";
@@ -14,6 +15,7 @@ export function createApp(container: Pick<AppContainer, "userRoutes">) {
     })
   );
   app.use(express.json());
+  app.use(cookieParser());
 
   app.get("/health", (_req: Request, res: Response) => {
     res.json({ status: "ok" });

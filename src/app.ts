@@ -1,10 +1,9 @@
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import express, { Request, Response } from "express";
-import type { AppContainer } from "./container";
 import { errorHandler } from "./middlewares";
-
-export function createApp(container: Pick<AppContainer, "userRoutes">) {
+import {AppRoutes} from "./container";
+export function createApp(container: AppRoutes) {
   const app = express();
 
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || ["http://localhost:3000"];
@@ -12,6 +11,7 @@ export function createApp(container: Pick<AppContainer, "userRoutes">) {
   app.use(
     cors({
       origin: allowedOrigins,
+      credentials: true,
     })
   );
   app.use(express.json());
@@ -22,6 +22,8 @@ export function createApp(container: Pick<AppContainer, "userRoutes">) {
   });
 
   app.use("/users", container.userRoutes);
+  app.use("/auth", container.authRoutes);
+  app.use("/wallets", container.walletRoutes);
 
   app.use(errorHandler);
 

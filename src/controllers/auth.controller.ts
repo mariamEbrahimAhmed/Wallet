@@ -23,6 +23,7 @@ export function createAuthController(deps: { authService: AuthService }) {
       const refreshToken = req.cookies?.refreshToken;
       await authService.logout(refreshToken);
       res.clearCookie("refreshToken");
+      res.status(HttpStatusCode.NO_CONTENT).send();
     },
 
     async refreshToken(req: Request, res: Response): Promise<void> {

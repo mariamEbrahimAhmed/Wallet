@@ -14,8 +14,9 @@ export function createAuthController(deps: { authService: AuthService }) {
     },
 
     async login(req: Request<unknown, unknown, LoginDto>, res: Response): Promise<void> {
-      const user = await authService.login(req.body);
-      sendSuccess(res, toPublicUser(user));
+      const { user, accessToken, refreshToken } = await authService.login(req.body);
+      res.cookie("refreshToken", refreshToken);
+      sendSuccess(res, { user: toPublicUser(user), accessToken });
     },
 
     async logout(req: Request, res: Response): Promise<void> {

@@ -2,8 +2,9 @@ import type { UserService } from "./user.service";
 import type { RefreshTokenRepository } from "../repositories/refresh-token.repository.interface";
 import type { RegisterDto, LoginDto } from "../dtos/auth.dto";
 import type { User } from "../models";
+import type { LoginResult } from "../types";
 import { AuthenticationError } from "../errors";
-import { comparePassword, hashToken, generateAccessToken } from "../utils";
+import { comparePassword, hashToken, generateAccessToken, generateRefreshToken } from "../utils";
 
 export function createAuthService(deps: { userService: UserService; refreshTokenRepository: RefreshTokenRepository }) {
   const { userService, refreshTokenRepository } = deps;
@@ -13,7 +14,7 @@ export function createAuthService(deps: { userService: UserService; refreshToken
       return userService.registerUser(input);
     },
 
-    async login(input: LoginDto): Promise<User> {
+    async login(input: LoginDto): Promise<LoginResult> {
       const user = await userService.getUserByPhoneNumber(input.phoneNumber);
       if (!user) {
         throw new AuthenticationError("Wrong phone number or password");
@@ -24,7 +25,11 @@ export function createAuthService(deps: { userService: UserService; refreshToken
         throw new AuthenticationError("Wrong phone number or password");
       }
 
-      return user;
+      const accessToken = generateAccessToken(user);
+      const refreshToken = generateRefreshToken();
+      await refreshTokenRepository.setHashedToken(user.id, hashToken(refreshToken));
+
+      return { user, accessToken, refreshToken };
     },
 
     async logout(refreshToken: string | undefined): Promise<void> {

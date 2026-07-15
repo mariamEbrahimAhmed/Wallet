@@ -1,6 +1,6 @@
 import { Pool, PoolClient } from "pg";
 import { Wallet } from "../../models";
-import { CreateWalletDto } from "../../types";
+import { CreateWalletDto } from "../../dtos/wallet.dto";
 import { WalletRepository } from "../wallet.repository.interface";
 import { WalletRow, toWallet } from "./mappers/wallet.mapper";
 import { NotFoundError, InsufficientFundsError } from "../../errors";

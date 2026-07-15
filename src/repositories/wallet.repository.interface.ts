@@ -1,6 +1,6 @@
 import { PoolClient } from "pg";
 import { Wallet } from "../models";
-import { CreateWalletDto } from "../types";
+import { CreateWalletDto } from "../dtos/wallet.dto";
 
 export interface WalletRepository {
   create(input: CreateWalletDto, client?: PoolClient): Promise<Wallet>;

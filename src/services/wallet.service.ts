@@ -3,8 +3,7 @@ import type { PoolClient } from "pg";
 import type { WalletRepository } from "../repositories/wallet.repository.interface";
 import { Wallet } from "../models";
 import { AppError } from "../errors";
-import type { CreateWalletDto } from "../types";
-import type { WithdrawDto } from "../dtos/wallet.dto";
+import type { CreateWalletDto, WithdrawDto } from "../dtos/wallet.dto";
 
 export function createWalletService(deps: { walletRepository: WalletRepository; logger: Logger }) {
   const { walletRepository, logger } = deps;

@@ -1,6 +1,6 @@
 import { createApp } from "./app";
 import { config } from "./config";
-import { connectToDatabase } from "./config/db";
+import { connectToDatabase } from "./db/pool";
 import { logger } from "./config/logger";
 import { buildContainer } from "./container";
 

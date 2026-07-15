@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool, PoolClient } from "pg";
 import { User } from "../../models";
 import { CreateUserDto } from "../../types";
 import { UserRepository } from "../user.repository.interface";
@@ -8,9 +8,9 @@ import { PgErrorCode } from "../../constants/pg-error-codes";
 
 export function createUserRepository(pool: Pool): UserRepository {
   return {
-    async create(input: CreateUserDto): Promise<User> {
+    async create(input: CreateUserDto, client?: PoolClient): Promise<User> {
       try {
-        const { rows } = await pool.query<UserRow>(
+        const { rows } = await (client ?? pool).query<UserRow>(
           `INSERT INTO users (username, phone_number, hashed_password)
        VALUES ($1, $2, $3)
        RETURNING *`,

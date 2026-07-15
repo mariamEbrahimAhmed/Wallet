@@ -1,21 +1,36 @@
+import type { Pool } from "pg";
 import type { Logger } from "pino";
 import type { UserRepository } from "../repositories/user.repository.interface";
+import type { WalletService } from "./wallet.service";
 import { User } from "../models";
 import { AppError } from "../errors";
 import { hashPassword } from "../utils";
+import { withAtomic } from "../db/withAtomic";
 import type { RegisterUserInput } from "../types";
 
-export function createUserService(deps: { userRepository: UserRepository; logger: Logger }) {
-  const { userRepository, logger } = deps;
+export function createUserService(deps: {
+  userRepository: UserRepository;
+  walletService: WalletService;
+  pool: Pool;
+  logger: Logger;
+}) {
+  const { userRepository, walletService, pool, logger } = deps;
 
   return {
     async registerUser(input: RegisterUserInput): Promise<User> {
       try {
         const hashedPassword = await hashPassword(input.password);
-        const user = await userRepository.create({
-          username: input.username,
-          phoneNumber: input.phoneNumber,
-          hashedPassword,
+        const user = await withAtomic(pool, async (client) => {
+          const createdUser = await userRepository.create(
+            {
+              username: input.username,
+              phoneNumber: input.phoneNumber,
+              hashedPassword,
+            },
+            client
+          );
+          await walletService.createWallet({ userId: createdUser.id }, client);
+          return createdUser;
         });
         logger.info({ userId: user.id }, "User registered");
         return user;
